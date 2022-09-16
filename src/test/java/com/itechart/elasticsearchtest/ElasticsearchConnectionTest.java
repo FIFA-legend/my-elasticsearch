@@ -1,7 +1,7 @@
 package com.itechart.elasticsearchtest;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.CreateResponse;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.itechart.elasticsearchtest.document.Person;
@@ -41,22 +41,23 @@ class ElasticsearchConnectionTest {
 		String index = "person";
 
 		try {
-			CreateResponse create = elasticsearchClient.create(c -> c
+			IndexResponse response = elasticsearchClient.index(i -> i
 					.index(index)
 					.id(id)
 					.document(person)
 			);
 
-			assertThat(create.index()).isEqualTo(index);
-			assertThat(create.id()).isEqualTo(id);
+			assertThat(response.index()).isEqualTo(index);
+			assertThat(response.id()).isEqualTo(id);
 
 			SearchResponse<Person> search = elasticsearchClient.search(s -> s
 							.index(index)
 							.query(q -> q
-									.term(t -> t
+									.match(t -> t
 											.field("id")
-											.value(v -> v.stringValue(id))
-									)),
+											.query(id)
+									)
+							),
 					Person.class);
 
 			for (Hit<Person> hit: search.hits().hits()) {
@@ -71,6 +72,7 @@ class ElasticsearchConnectionTest {
 	public static void shutdown() {
 		elasticsearchClient.shutdown();
 		container.stop();
+		container.close();
 	}
 
 }
