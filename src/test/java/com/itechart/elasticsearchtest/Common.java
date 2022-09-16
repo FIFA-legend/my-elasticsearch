@@ -8,11 +8,15 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class Common {
 
     public static ElasticsearchContainer createContainer() {
-        return new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.4.0")
+        DockerImageName name = DockerImageName.parse("docker.io/library/elasticsearch:8.4.1")
+                .asCompatibleSubstituteFor("docker.elastic.co/elasticsearch/elasticsearch");
+
+        return new ElasticsearchContainer(name)
                 .withEnv("discovery.type", "single-node")
                 .withEnv("xpack.security.enabled", "false")
                 .withExposedPorts(9200, 9300)
